@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  title: vive-api
+  version: '1.0'
+  summary: Vive Rest API
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /api/v1/hsa/reimbursements/requests:
+    post:
+      summary: Submit an HSA request
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CommonResponse'
+              examples:
+                ok-response:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: c59cdf30-426c-40fa-a1b5-fc3cb7a59ca0
+                    status: ok
+        '500':
+          $ref: '#/components/responses/error-response'
+      operationId: postHSAReimbursementRequest
+      description: Submit an HSA reimbusment request
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  exclusiveMinimum: 0
+                reason:
+                  type: string
+                attachment:
+                  type: string
+                  format: binary
+                bankName:
+                  type: string
+                bankRoutingNumber:
+                  type: string
+                bankAccountNumber:
+                  type: string
+              required:
+                - amount
+                - reason
+                - attachment
+                - bankName
+                - bankRoutingNumber
+                - bankAccountNumber
+            examples:
+              valid-request:
+                value:
+                  amount: 500
+                  reason: Need that money
+                  attachment: abcdef
+                  bankName: Chase
+                  bankRoutingNumber: 610061
+                  bankAccountNumber: 123456789
+              invalid-request:
+                value:
+                  amount: 0
+                  reason: Need that money
+                  attachment: a
+                  bankName: Chase
+                  bankRoutingNumber: 610061
+                  bankAccountNumber: 123456789
+        description: The request body
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      description: ''
+      examples:
+        - id: 142
+          firstName: Alice
+          lastName: Smith
+          email: alice.smith@gmail.com
+          dateOfBirth: '1997-10-31'
+          emailVerified: true
+          signUpDate: '2019-08-24'
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1997-10-31'
+        emailVerified:
+          type: boolean
+          description: Set to true if the user's email has been verified.
+        createDate:
+          type: string
+          format: date
+          description: The date that the user was created.
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - emailVerified
+    CommonResponse:
+      description: ''
+      type: object
+      x-examples:
+        example-1:
+          dateTime: '2019-08-24T14:15:22Z'
+          transactionId: string
+          status: ok
+      examples: []
+      properties:
+        dateTime:
+          type: string
+          minLength: 1
+          format: date-time
+        transactionId:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        error:
+          type: string
+      required:
+        - dateTime
+        - transactionId
+        - status
+      x-tags:
+        - hsa
+  responses:
+    error-response:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              dateTime:
+                type: string
+                format: date-time
+              transactionId:
+                type: string
+              status:
+                type: string
+              error:
+                type: string
+          examples:
+            internal-error:
+              value:
+                dateTime: '2019-08-24T14:15:22Z'
+                transactionId: '123456'
+                status: error
+                error: Internal error
+            bad-request:
+              value:
+                dateTime: '2019-08-24T14:15:22Z'
+                transactionId: '123456'
+                status: error
+                error: Invalid request
