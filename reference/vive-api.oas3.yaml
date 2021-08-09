@@ -73,6 +73,79 @@ paths:
                   bankRoutingNumber: 610061
                   bankAccountNumber: 123456789
         description: The request body
+  '/api/v1/user/{id}/activation/password':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    post:
+      summary: Set a new password
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CommonResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          next_step:
+                            type: string
+              examples:
+                ok-response:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: '12345678'
+                    status: ok
+                    error: ''
+                    data:
+                      next_step: verify_identity
+        '400':
+          description: Bad Request
+        '500':
+          $ref: '#/components/responses/error-response'
+      operationId: set_new_password
+      description: Complete the first activation form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                birth_date:
+                  type: string
+                  format: date
+                last_4_digits:
+                  type: string
+                password:
+                  type: string
+                password_repeat:
+                  type: string
+              required:
+                - birth_date
+                - last_4_digits
+                - password
+                - password_repeat
+  '/api/v1/users/{id}/activation/status':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Get the activation status
+      tags: []
+      responses: {}
+      operationId: get-api-v1-users-id-activation-status
+      description: Get the activation status
 components:
   schemas:
     User:
