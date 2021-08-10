@@ -1,8 +1,10 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
   title: vive-api
   version: '1.0'
-  summary: Vive Rest API
+  description: Vive Rest API
+  contact:
+    name: Vive Lead
 servers:
   - url: 'http://localhost:3000'
 paths:
@@ -12,7 +14,7 @@ paths:
       tags: []
       responses:
         '200':
-          description: OK
+          description: Success response
           content:
             application/json:
               schema:
@@ -23,9 +25,30 @@ paths:
                   value:
                     dateTime: '2019-08-24T14:15:22Z'
                     transactionId: c59cdf30-426c-40fa-a1b5-fc3cb7a59ca0
-                    status: ok
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid-request:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: 75906707-8c31-479c-b354-aa805c4cefbc
+                    error: Bad request
         '500':
-          $ref: '#/components/responses/error-response'
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internal-error:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: 75906707-8c31-479c-b354-aa805c4cefbc
+                    error: Internal server error
       operationId: postHSAReimbursementRequest
       description: Submit an HSA reimbusment request
       requestBody:
@@ -36,7 +59,6 @@ paths:
               properties:
                 amount:
                   type: number
-                  exclusiveMinimum: 0
                 reason:
                   type: string
                 attachment:
@@ -62,16 +84,16 @@ paths:
                   reason: Need that money
                   attachment: abcdef
                   bankName: Chase
-                  bankRoutingNumber: 610061
-                  bankAccountNumber: 123456789
+                  bankRoutingNumber: '610061'
+                  bankAccountNumber: '123456789'
               invalid-request:
                 value:
                   amount: 0
                   reason: Need that money
                   attachment: a
                   bankName: Chase
-                  bankRoutingNumber: 610061
-                  bankAccountNumber: 123456789
+                  bankRoutingNumber: '610061'
+                  bankAccountNumber: '123456789'
         description: The request body
   '/api/v1/user/{id}/activation/password':
     parameters:
@@ -85,7 +107,7 @@ paths:
       tags: []
       responses:
         '200':
-          description: OK
+          description: Success response
           content:
             application/json:
               schema:
@@ -102,15 +124,33 @@ paths:
                 ok-response:
                   value:
                     dateTime: '2019-08-24T14:15:22Z'
-                    transactionId: '12345678'
-                    status: ok
-                    error: ''
+                    transactionId: 75906707-8c31-479c-b354-aa805c4cefbc
                     data:
                       next_step: verify_identity
         '400':
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                bad-request:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: 75906707-8c31-479c-b354-aa805c4cefbc
+                    error: Bad request
         '500':
-          $ref: '#/components/responses/error-response'
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internal-error:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: 75906707-8c31-479c-b354-aa805c4cefbc
+                    error: Internal server error
       operationId: set_new_password
       description: Complete the first activation form
       requestBody:
@@ -122,7 +162,7 @@ paths:
                 birth_date:
                   type: string
                   format: date
-                last_4_digits:
+                last_four_digits:
                   type: string
                 password:
                   type: string
@@ -130,7 +170,7 @@ paths:
                   type: string
               required:
                 - birth_date
-                - last_4_digits
+                - last_four_digits
                 - password
                 - password_repeat
   '/api/v1/users/{id}/activation/status':
@@ -143,60 +183,110 @@ paths:
     get:
       summary: Get the activation status
       tags: []
-      responses: {}
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CommonResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          step:
+                            type: string
+                            enum:
+                              - set_password
+                              - verify_identity
+                              - sign_docs
+                          set_password:
+                            type: object
+                            properties:
+                              birth_date:
+                                type: string
+                                format: date
+                              last_four_digits:
+                                type: string
+                                pattern: '^[0-9]+'
+                                minLength: 4
+                                maxLength: 4
+                          verify_identity:
+                            type: object
+                            properties:
+                              first_name:
+                                type: string
+                              middle_name:
+                                type: string
+                              last_name:
+                                type: string
+                              address_line1:
+                                type: string
+                              address_line2:
+                                type: string
+                              city:
+                                type: string
+                              state:
+                                type: string
+                              zip_code:
+                                type: string
+                              phone:
+                                type: string
+                              mother_maiden_name:
+                                type: string
+                              gov_id_type:
+                                type: string
+                              gov_id_issue_date:
+                                type: string
+                                format: date
+                              gov_id_expiry_date:
+                                type: string
+                                format: date
+                          sign_docs:
+                            type: object
+              examples:
+                ok-response:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: 75906707-8c31-479c-b354-aa805c4cefbc
+                    data:
+                      next_step: verify_identity
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                bad-request:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: 75906707-8c31-479c-b354-aa805c4cefbc
+                    error: Bad request
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internal-error:
+                  value:
+                    dateTime: '2019-08-24T14:15:22Z'
+                    transactionId: 75906707-8c31-479c-b354-aa805c4cefbc
+                    error: Internal server error
       operationId: get-api-v1-users-id-activation-status
       description: Get the activation status
 components:
   schemas:
-    User:
-      title: User
-      type: object
-      description: ''
-      examples:
-        - id: 142
-          firstName: Alice
-          lastName: Smith
-          email: alice.smith@gmail.com
-          dateOfBirth: '1997-10-31'
-          emailVerified: true
-          signUpDate: '2019-08-24'
-      properties:
-        id:
-          type: integer
-          description: Unique identifier for the given user.
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
-          format: email
-        dateOfBirth:
-          type: string
-          format: date
-          example: '1997-10-31'
-        emailVerified:
-          type: boolean
-          description: Set to true if the user's email has been verified.
-        createDate:
-          type: string
-          format: date
-          description: The date that the user was created.
-      required:
-        - id
-        - firstName
-        - lastName
-        - email
-        - emailVerified
     CommonResponse:
-      description: ''
       type: object
-      x-examples:
-        example-1:
-          dateTime: '2019-08-24T14:15:22Z'
-          transactionId: string
-          status: ok
-      examples: []
+      description: A common object for successful responses
+      x-examples: {}
+      x-tags:
+        - hsa
       properties:
         dateTime:
           type: string
@@ -205,44 +295,21 @@ components:
         transactionId:
           type: string
           minLength: 1
-        status:
-          type: string
-          minLength: 1
-        error:
-          type: string
+          format: uuid
       required:
         - dateTime
         - transactionId
-        - status
-      x-tags:
-        - hsa
-  responses:
-    error-response:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              dateTime:
-                type: string
-                format: date-time
-              transactionId:
-                type: string
-              status:
-                type: string
-              error:
-                type: string
-          examples:
-            internal-error:
-              value:
-                dateTime: '2019-08-24T14:15:22Z'
-                transactionId: '123456'
-                status: error
-                error: Internal error
-            bad-request:
-              value:
-                dateTime: '2019-08-24T14:15:22Z'
-                transactionId: '123456'
-                status: error
-                error: Invalid request
+    ErrorResponse:
+      title: ErrorResponse
+      allOf:
+        - $ref: '#/components/schemas/CommonResponse'
+        - type: object
+          properties:
+            code:
+              type: string
+            error:
+              type: string
+          required:
+            - error
+      description: A common object for error responses
+  responses: {}
