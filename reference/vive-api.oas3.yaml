@@ -104,7 +104,8 @@ paths:
         required: true
     post:
       summary: Set a new password
-      tags: []
+      tags:
+        - account-activation
       responses:
         '200':
           description: Success response
@@ -182,7 +183,8 @@ paths:
         required: true
     get:
       summary: Get the activation status
-      tags: []
+      tags:
+        - account-activation
       responses:
         '200':
           description: Success response
@@ -313,3 +315,6 @@ components:
             - error
       description: A common object for error responses
   responses: {}
+  securitySchemes: {}
+tags:
+  - name: account-activation
